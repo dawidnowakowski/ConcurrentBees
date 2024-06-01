@@ -16,9 +16,8 @@ Struktury i zmienne:
    AckNumReed - liczba uzyskanych ACKreed on innych pszczół, początkowo 0
    layedEggs - liczba złożonych jaj dlla danej pszczóły, początkowo 0
    reeds - tablica int'ów, która na danym indeksie przechowuje liczbę złożonych jaj dla danej trzciny (początkowo wypełniona zerami)
-   reeds_local - tablica zawierająca indeksy wszystkich trzcin z tablicy reeds, która jest sortowana w momencie otrzymania RELEASEreed
    req_ack_message - struktura wiadomości zawierająca pid oraz timestamp
-   release_message - struktura wiadomości zawierająca następujące pola: pid, indeks zajmowanej trzciny z tablicy reeds_local, FULL/AVAILABLE w zależności od wypełnienia trzicny
+   release_message - struktura wiadomości zawierająca następujące pola: pid, FULL/AVAILABLE w zależności od wypełnienia trzicny
    
 
 Wiadmości:
@@ -52,7 +51,7 @@ Szczegółowy opis algorytmu dla procesu i:
          b. REQreed: odsyła ACKreed
          c. ACKflower: ignoruje (sytuacja niemożliwa)
          d. ACKreed: ignoruje (sytuacja niemożliwa)
-         e. RELEASEreed: proces aktualizuje lokalną kolejkę żądań WaitQueueReeds oraz reeds_local. Z WaitQueueReeds usuwane jest żądanie procesu, którego pid jest zawarty w wiadomości, a reszta żądań jest przesuwana o jedną pozycję do przodu. W tablicy reeds_local wartość na indeksie i, który jest zawarty w wiadomości, jest przesuwana na koniec tablicy, a wartości z indeksów z zakresu i+1 < t-1 są przesuwana o jedną pozycję do przodu.
+         e. RELEASEreed: proces aktualizuje lokalną kolejkę żądań WaitQueueReeds. Z WaitQueueReeds usuwane jest żądanie procesu, którego pid jest zawarty w wiadomości, a reszta żądań jest przesuwana o jedną pozycję do przodu.
 
    2. WAIT_REED: ubieganie się o sekcję krytyczną.
       2.1 Ze stanu WAIT_REED następuje przejście do stanu ON_REED pod warunkiem, że proces otrzyma ACKreed od wszystkich innych procesów oraz jeżeli jego indeks i w kolejce WaitQueueReeds spełnia warunek i < t.
@@ -61,10 +60,10 @@ Szczegółowy opis algorytmu dla procesu i:
          b. REQreed: Po otrzymaniu REQreed od procesu j-tego, proces i-ty wstawia żądanie do lokalnej kolejki żądań (posortowanej po ich znacznikach czasowych/priorytetach). Nastepnie proces i-ty odsyła do procesu j-tego ACKreed.
          c. ACKflower: ignoruje (sytuacja niemożliwa)
          d. ACKreed: zwiększa licznik otrzymanych ACKreed (AckNumReed++)
-         e. RELEASEreed: proces aktualizuje lokalną kolejkę żądań WaitQueueReeds oraz reeds_local. Z WaitQueueReeds usuwane jest żądanie procesu, którego pid jest zawarty w wiadomości, a reszta żądań jest przesuwana o jedną pozycję do przodu. W tablicy reeds_local wartość na indeksie i, który jest zawarty w wiadomości, jest przesuwana na koniec tablicy, a wartości z indeksów z zakresu i+1 < t-1 są przesuwana o jedną pozycję do przodu.
+         e. RELEASEreed: proces aktualizuje lokalną kolejkę żądań WaitQueueReeds. Z WaitQueueReeds usuwane jest żądanie procesu, którego pid jest zawarty w wiadomości, a reszta żądań jest przesuwana o jedną pozycję do przodu.
 
    3. ON_REED: przebywanie w sekcji krytycznej.
-      3.1 Po wejściu do sekcji krytycznej, do pszczółki musi zostać przydzielona trzcina. Inicjalizowana jest tablica reeds_local, która zawiera kolejne liczby całkowite <0;t-1>, które są indeksami trzcin. Zależnie od miejsca (indeksu) w kolejce żądań WaitQueueReeds, na którym się znajduje, proces wybiera odpowiadającą mu trzcinę z tablicy reeds_local.
+      3.1 Po wejściu do sekcji krytycznej, do pszczółki musi zostać przydzielona trzcina. Przydział jest dokonywany w sposób statyczny w momencie wypełnienia kolejki WaitQueueReeds. Do określenia do której trzicny ma otrzymać dostęp pszczółka używana jest operacja modulo. Przykładowo (dla 2 trzcin) 1 pszczoła w kolejce WaitQueueReeds otrzyma dostęp do pierwszej trzciny jako pierwsza, 2 pszczoła w kolejce otrzyma dostęp do drugiej trzciny jako pierwsza, 3 pszczoła w kolejce otrzyma dostęp do pierwszej trzicny jako druga, 4 pszczoła otrzyma dostęp do drugiej trzicny jako druga.
       3.2 Po wybraniu trzciny proces będzie pięciokrotnie przechodził cykl stanów ON_REED -> WAIT_FLOWER -> ON_FLOWER -> ON_REED
       3.3 Przejście do stanu WAIT_FLOWER następuje w dowolnym momencie, w którym proces się na to zdecyduje. W momencie decyzji do wszystkich procesów wysyłane są wiadomości REQflower.
       3.4 Po przejściu ze stanu ON_FLOWER na ON_REED proces zwiększa prywatną zmienną layedEggs o 1. W momencie osiągnięcia wartości 5 następnuje przejście do stanu REST lub DEAD (opcjonalne).
@@ -74,7 +73,7 @@ Szczegółowy opis algorytmu dla procesu i:
          b. REQreed: Po otrzymaniu REQreed od procesu j-tego, proces i-ty wstawia żądanie do lokalnej kolejki żądań (posortowanej po ich znacznikach czasowych/priorytetach). Nastepnie proces i-ty odsyła do procesu j-tego ACKreed.
          c. ACKflower: ignoruje (sytuacja niemożliwa)
          d. ACKreed: ignoruje (sytuacja niemożliwa)
-         e. RELEASEreed: proces aktualizuje lokalną kolejkę żądań WaitQueueReeds oraz reeds_local. Z WaitQueueReeds usuwane jest żądanie procesu, którego pid jest zawarty w wiadomości, a reszta żądań jest przesuwana o jedną pozycję do przodu. W tablicy reeds_local wartość na indeksie i, który jest zawarty w wiadomości, jest przesuwana na koniec tablicy, a wartości z indeksów z zakresu i+1 < t-1 są przesuwana o jedną pozycję do przodu.
+         e. RELEASEreed: proces aktualizuje lokalną kolejkę żądań WaitQueueReeds. Z WaitQueueReeds usuwane jest żądanie procesu, którego pid jest zawarty w wiadomości, a reszta żądań jest przesuwana o jedną pozycję do przodu.
 
    4. WAIT_FLOWER: ubieganie się o sekcję krytyczną. 
       4.1 Ze stanu WAIT_FLOWER następuje przejście do stanu ON_FLOWER pod warunkiem, że proces otrzyma ACKflower od wszystkich innych procesów pomniejszonych o liczbę kwiatów (AckNumFlower == p - k).
@@ -83,7 +82,7 @@ Szczegółowy opis algorytmu dla procesu i:
          b. REQreed: Po otrzymaniu REQreed od procesu j-tego, proces i-ty wstawia żądanie do lokalnej kolejki żądań (posortowanej po ich znacznikach czasowych/priorytetach). Nastepnie proces i-ty odsyła do procesu j-tego ACKreed.
          c. ACKflower: zwiększa licznik otrzymanych ACKflower (AckNumFlower++). Tak, jak opisano to wyżej, gdy otrzymano ACKflower od wszystkich pozostałych procesów pomniejszonych o liczbę kwiatów, proces i przechodzi do stanu ON_FLOWER
          d. ACKreed: ignoruje (sytuacja niemożliwa)
-         e. RELEASEreed: proces aktualizuje lokalną kolejkę żądań WaitQueueReeds oraz reeds_local. Z WaitQueueReeds usuwane jest żądanie procesu, którego pid jest zawarty w wiadomości, a reszta żądań jest przesuwana o jedną pozycję do przodu. W tablicy reeds_local wartość na indeksie i, który jest zawarty w wiadomości, jest przesuwana na koniec tablicy, a wartości z indeksów z zakresu i+1 < t-1 są przesuwana o jedną pozycję do przodu.
+         e. RELEASEreed: proces aktualizuje lokalną kolejkę żądań WaitQueueReeds. Z WaitQueueReeds usuwane jest żądanie procesu, którego pid jest zawarty w wiadomości, a reszta żądań jest przesuwana o jedną pozycję do przodu.
 
    5. ON_FLOWER: przebywanie w sekcji krytycznej.
       5.1 Proces przebywa w sekcji krytycznej do czasu podjęcia decyzji o jej opuszczeniu. Po podjęciu decyzji o opuszczeniu sekcji, proces wysyła ACKflower w reakcji na wszystkie REQflower znajdujące się w WaitQueueFlowers, a następnie przechodzi do stanu ON_REED
@@ -92,6 +91,4 @@ Szczegółowy opis algorytmu dla procesu i:
          b. REQreed: Po otrzymaniu REQreed od procesu j-tego, proces i-ty wstawia żądanie do lokalnej kolejki żądań (posortowanej po ich znacznikach czasowych/priorytetach). Nastepnie proces i-ty odsyła do procesu j-tego ACKreed.
          c. ACKflower: ignoruje (sytuacja niemożliwa)
          d. ACKreed: ignoruje (sytuacja niemożliwa)
-         e. RELEASEreed: proces aktualizuje lokalną kolejkę żądań WaitQueueReeds oraz reeds_local. Z WaitQueueReeds usuwane jest żądanie procesu, którego pid jest zawarty w wiadomości, a reszta żądań jest przesuwana o jedną pozycję do przodu. W tablicy reeds_local wartość na indeksie i, który jest zawarty w wiadomości, jest przesuwana na koniec tablicy, a wartości z indeksów z zakresu i+1 < t-1 są przesuwana o jedną pozycję do przodu.
-
-   
+         e. RELEASEreed: proces aktualizuje lokalną kolejkę żądań WaitQueueReeds. Z WaitQueueReeds usuwane jest żądanie procesu, którego pid jest zawarty w wiadomości, a reszta żądań jest przesuwana o jedną pozycję do przodu.
