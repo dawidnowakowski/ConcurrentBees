@@ -1,7 +1,8 @@
 #include "main.h"
 #include "util.h"
 MPI_Datatype MPI_PAKIET_T;
-
+MPI_Datatype MPI_REQ_ACK;
+MPI_Datatype MPI_RELEASE;
 /*
  * w util.h extern state_t stan (czyli zapowiedź, że gdzieś tam jest definicja
  * tutaj w util.c state_t stan (czyli faktyczna definicja)
