@@ -14,6 +14,9 @@
 int rank, size;
 int ackCount = 0;
 int lamport = 0;
+
+request WaitQueueFlowers[p];
+request WaitQueueReeds[k];
 /*
  * Każdy proces ma dwa wątki - główny i komunikacyjny
  * w plikach, odpowiednio, watek_glowny.c oraz (siurpryza) watek_komunikacyjny.c
