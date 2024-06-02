@@ -30,8 +30,7 @@ const char *const tag2string(int tag)
     return "<unknown>";
 }
 
-/* tworzy typ MPI_PAKIET_T
- */
+/* tworzy typ MPI_PAKIET_T*/
 void inicjuj_typ_pakietu()
 {
     /* Stworzenie typu */
@@ -65,7 +64,6 @@ void inicjuj_typ_req_ack()
     MPI_Type_commit(&MPI_REQ_ACK);
 }
 
-/* tworzy typ MPI_RELEASE_T */
 void inicjuj_typ_release()
 {
     int blocklengths[NITEMS_RELEASE] = {1, 1, 1};

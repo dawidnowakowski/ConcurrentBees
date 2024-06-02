@@ -70,10 +70,16 @@ int main(int argc, char **argv)
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     check_thread_support(provided);
     srand(rank);
+    // inicjalizacja pakietów
     /* zob. util.c oraz util.h */
-    inicjuj_typ_pakietu(); // tworzy typ pakietu
+    inicjuj_typ_pakietu(); 
+    inicjuj_typ_req_ack();
+    inicjuj_typ_release();
+
+    // pobranie ilości wątków oraz rank czyli id wątku
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
     /* startKomWatek w watek_komunikacyjny.c */
     pthread_create(&threadKom, NULL, startKomWatek, 0);
 

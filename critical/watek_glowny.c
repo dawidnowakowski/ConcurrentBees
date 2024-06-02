@@ -3,9 +3,9 @@
 
 void mainLoop()
 {
-	srandom(rank);
-	int tag;
-	int perc;
+	srandom(rank); // seed dla generatora
+	int tag; // tagi dostępne są w util.h
+	int perc; // deklaracja zmiennej, która będzie decydować, czy proces chce wykonać akcję czy poczeka.
 
 	while (stan != InFinish)
 	{
