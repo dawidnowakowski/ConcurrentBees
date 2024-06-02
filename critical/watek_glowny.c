@@ -30,6 +30,29 @@ void mainLoop()
 			debug("Skończyłem myśleć");
 			break;
 
+		case REST:
+			perc = random() % 100;
+			if (perc < 25)
+			{
+				debug("Perc: %d", perc);
+				println("Ubiegam się o trzcinę (sekcję krytyczną)")
+					debug("Zmieniam stan na wysyłanie");
+				packet_t *pkt = malloc(sizeof(packet_t));
+				ackNumReed = 0;
+				for (int i = 0; i <= size - 1; i++)
+					if (i != rank)
+						sendPacket(pkt, i, REQreed);
+				changeState(WAIT_REED);
+				free(pkt);
+			}
+			debug("Skończyłem myśleć");
+		case WAIT_REED:
+			println("Czekam na wejście do sekcji krytycznej")
+				// tutaj zapewne jakiś semafor albo zmienna warunkowa
+				// bo aktywne czekanie jest BUE
+				if (ackNumReed == size - 1)
+					changeState(InSection);
+			break;
 		case InWant:
 			println("Czekam na wejście do sekcji krytycznej")
 				// tutaj zapewne jakiś semafor albo zmienna warunkowa

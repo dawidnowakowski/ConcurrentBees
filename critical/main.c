@@ -13,6 +13,8 @@
  */
 int rank, size;
 int ackCount = 0;
+int ackNumFlower = 0;
+int ackNumReed = 0;
 int lamport = 0;
 
 request WaitQueueFlowers[p];
@@ -73,8 +75,7 @@ int main(int argc, char **argv)
     // inicjalizacja pakietów
     /* zob. util.c oraz util.h */
     inicjuj_typ_pakietu(); 
-    inicjuj_typ_req_ack();
-    inicjuj_typ_release();
+
 
     // pobranie ilości wątków oraz rank czyli id wątku
     MPI_Comm_size(MPI_COMM_WORLD, &size);

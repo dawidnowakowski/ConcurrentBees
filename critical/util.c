@@ -9,7 +9,7 @@ MPI_Datatype MPI_RELEASE;
  */
 // state_t stan = REST; // początkowy stan to REST
 state_t stan = InRun; // początkowy stan to REST
-extern int lamport;  // lamport jest zainicjaluzowany w main.c
+extern int lamport;   // lamport jest zainicjaluzowany w main.c
 
 pthread_mutex_t stateMut = PTHREAD_MUTEX_INITIALIZER; // muteks na zmianę stanu
 
@@ -51,33 +51,6 @@ void inicjuj_typ_pakietu()
     MPI_Type_commit(&MPI_PAKIET_T);
 }
 
-void inicjuj_typ_req_ack()
-{
-    int blocklengths[NITEMS_REQ_ACK] = {1, 1};
-    MPI_Datatype typy[NITEMS_REQ_ACK] = {MPI_INT, MPI_INT};
-
-    MPI_Aint offsets[NITEMS_REQ_ACK];
-    offsets[0] = offsetof(req_ack_message, pid);
-    offsets[1] = offsetof(req_ack_message, timestamp);
-
-    MPI_Type_create_struct(NITEMS_REQ_ACK, blocklengths, offsets, typy, &MPI_REQ_ACK);
-    MPI_Type_commit(&MPI_REQ_ACK);
-}
-
-void inicjuj_typ_release()
-{
-    int blocklengths[NITEMS_RELEASE] = {1, 1, 1};
-    MPI_Datatype typy[NITEMS_RELEASE] = {MPI_INT, MPI_INT, MPI_INT};
-
-    MPI_Aint offsets[NITEMS_RELEASE];
-    offsets[0] = offsetof(release_message, pid);
-    offsets[1] = offsetof(release_message, timestamp);
-    offsets[2] = offsetof(release_message, status);
-
-    MPI_Type_create_struct(NITEMS_RELEASE, blocklengths, offsets, typy, &MPI_RELEASE);
-    MPI_Type_commit(&MPI_RELEASE);
-}
-
 /* opis patrz util.h */
 void sendPacket(packet_t *pkt, int destination, int tag)
 {
@@ -99,48 +72,6 @@ void sendPacket(packet_t *pkt, int destination, int tag)
         free(pkt);
 }
 
-/* wysyłanie wiadomości req_ack_message */
-void sendReqAck(req_ack_message *msg, int destination, int tag)
-{
-    int freemsg = 0;
-    if (msg == 0)
-    {
-        msg = malloc(sizeof(req_ack_message));
-        freemsg = 1;
-    }
-    msg->pid = rank;
-
-    pthread_mutex_lock(&stateMut);
-    msg->timestamp = ++lamport;
-    pthread_mutex_unlock(&stateMut);
-
-    MPI_Send(msg, 1, MPI_REQ_ACK, destination, tag, MPI_COMM_WORLD);
-    debug("Wysyłam %s do %d\n", tag2string(tag), destination);
-    if (freemsg)
-        free(msg);
-}
-
-/* wysyłanie wiadomości release_message */
-void sendRelease(release_message *msg, int destination, int tag)
-{
-    int freemsg = 0;
-    if (msg == 0)
-    {
-        msg = malloc(sizeof(release_message));
-        freemsg = 1;
-    }
-    msg->pid = rank;
-
-    pthread_mutex_lock(&stateMut);
-    msg->timestamp = ++lamport;
-    pthread_mutex_unlock(&stateMut);
-
-    MPI_Send(msg, 1, MPI_RELEASE, destination, tag, MPI_COMM_WORLD);
-    debug("Wysyłam %s do %d\n", tag2string(tag), destination);
-    if (freemsg)
-        free(msg);
-}
-
 void changeState(state_t newState)
 {
     pthread_mutex_lock(&stateMut);
@@ -152,4 +83,31 @@ void changeState(state_t newState)
     }
     stan = newState;
     pthread_mutex_unlock(&stateMut);
+}
+
+// funkcja do porównania dwóch requestów (po ts i pid)
+int compare_requests(const void *a, const void *b)
+{
+    const request *req1 = (const request *)a;
+    const request *req2 = (const request *)b;
+
+    // Sortowanie rosnące po timestamp
+    if (req1->timestamp != req2->timestamp)
+    {
+        return req1->timestamp - req2->timestamp;
+    }
+    // Sortowanie malejące po pid, gdy timestampy są równe
+    return req2->pid - req1->pid;
+}
+
+// funkcja dodająca nowy request do tablicy WaitQueueReeds
+void add_request(int pid, int timestamp, request *WaitQueueReeds, int *current_size)
+{
+    request new_request = {pid, timestamp};
+
+    WaitQueueReeds[*current_size] = new_request;
+    (*current_size)++;
+
+    // posortuj tablicę po dodaniu nowego elementu
+    qsort(WaitQueueReeds, *current_size, sizeof(request), compare_requests);
 }

@@ -22,7 +22,7 @@ void *startKomWatek(void *ptr)
         MPI_Recv(&pakiet, 1, MPI_PAKIET_T, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
         pthread_mutex_lock(&stateMut);
-        lamport = max(pakiet.ts, lamport);
+        lamport = max(pakiet.ts, lamport) + 1;
         pthread_mutex_unlock(&stateMut);
 
         switch (status.MPI_TAG)
@@ -35,6 +35,15 @@ void *startKomWatek(void *ptr)
             debug("Dostałem ACK od %d, mam już %d", status.MPI_SOURCE, ackCount);
             ackCount++; /* czy potrzeba tutaj muteksa? Będzie wyścig, czy nie będzie? Zastanówcie się. */
             break;
+        case ACKreed:
+            debug("Dostałem ACKreed od %d, mam już %d", status.MPI_SOURCE, ackNumReed);
+            // ackNumReed zwiększane w add_request()
+            int timestamp = pakiet.ts;
+            int pid = pakiet.src;
+            add_request(pid, timestamp, WaitQueueReeds, &ackNumReed);
+
+            break;
+
         default:
             break;
         }
