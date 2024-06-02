@@ -100,7 +100,7 @@ int compare_requests(const void *a, const void *b)
     return req2->pid - req1->pid;
 }
 
-// funkcja dodająca nowy request do tablicy WaitQueueReeds
+// funkcja dodająca nowy request do tablicy WaitQueueReeds, current_size powinen być ackNumReed
 void add_request(int pid, int timestamp, request *WaitQueueReeds, int *current_size)
 {
     request new_request = {pid, timestamp};

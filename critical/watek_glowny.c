@@ -4,8 +4,8 @@
 void mainLoop()
 {
 	srandom(rank); // seed dla generatora
-	int tag; // tagi dostępne są w util.h
-	int perc; // deklaracja zmiennej, która będzie decydować, czy proces chce wykonać akcję czy poczeka.
+	int tag;	   // tagi dostępne są w util.h
+	int perc;	   // deklaracja zmiennej, która będzie decydować, czy proces chce wykonać akcję czy poczeka.
 
 	while (stan != InFinish)
 	{
@@ -39,6 +39,7 @@ void mainLoop()
 					debug("Zmieniam stan na wysyłanie");
 				packet_t *pkt = malloc(sizeof(packet_t));
 				ackNumReed = 0;
+				add_request(rank, lamport, WaitQueueReeds, &ackNumReed); // dodanie samego siebie do kolejki
 				for (int i = 0; i <= size - 1; i++)
 					if (i != rank)
 						sendPacket(pkt, i, REQreed);
@@ -46,12 +47,33 @@ void mainLoop()
 				free(pkt);
 			}
 			debug("Skończyłem myśleć");
+			break;
 		case WAIT_REED:
-			println("Czekam na wejście do sekcji krytycznej")
-				// tutaj zapewne jakiś semafor albo zmienna warunkowa
-				// bo aktywne czekanie jest BUE
-				if (ackNumReed == size - 1)
-					changeState(InSection);
+			println("Czekam na wejście do sekcji krytycznej");
+			if (ackNumReed == size - 1)
+			{
+				// Znajdź indeks requestu o pid == rank
+				int reedIndex = -1;
+				for (int i = 0; i < size; ++i)
+				{
+					if (WaitQueueReeds[i].pid == rank)
+					{
+						reedIndex = i;
+						break;
+					}
+				}
+
+				// Oblicz do której trzciny należy dany proces
+				int reedId = reedIndex % (size / t);
+				// Oblicz jako który z kolei powinien dany proces na trzcinę wejść.
+				int indexInReed = reedIndex / (size / t);
+				// Znajdz pozycję pszczoły, która ma wejść na trzcinę po tobie
+				int nextIndex = reedIndex + t;
+
+				// Przejście do stanu ON_REED
+				changeState(ON_REED);
+			}
+
 			break;
 		case InWant:
 			println("Czekam na wejście do sekcji krytycznej")

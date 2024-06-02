@@ -35,7 +35,7 @@ extern request WaitQueueReeds[];
 #define ACKflower 2
 #define REQreed 3
 #define ACKreed 4
-#define REALEASEreed 5
+#define RELEASEreed 5
 
 
 
