@@ -6,7 +6,7 @@ T rozróżnialnych trzcin – każda trzcina może pomieścić 15 jaj (kokonów)
 
 
 Struktury i zmienne:
-   p - początkowa liczba pszczół (opcjonalnie zmniejsza z każdą martwą pszczółką)
+   p - początkowa liczba pszczół (opcjonalnie zmniejszana z każdą martwą pszczółką)
    k - liczba kwiatów (nierozróżnialny zasób) 
    t - liczba trzcin (rozróżnialny zasób) zmniejszana o liczbę trzcin, na których znajduje się już 15 kokonów
    request - struktura zawierająca dwa pola: pid, timestamp
