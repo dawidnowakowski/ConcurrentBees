@@ -112,7 +112,7 @@ void add_reed_request(int pid, int timestamp, request *WaitQueueReeds, int *curr
     (*current_size)++;
 
     // posortuj tablicę po dodaniu nowego elementu
-    qsort(WaitQueueReeds, *current_size, sizeof(request), compare_requests);
+    //qsort(WaitQueueReeds, *current_size, sizeof(request), compare_requests);
 }
 
 void add_flower_request(int pid, int timestamp, request *WaitQueueFlowers, int *current_size)
@@ -123,9 +123,15 @@ void add_flower_request(int pid, int timestamp, request *WaitQueueFlowers, int *
 
 void printWaitQueueReeds(request *WaitQueueReeds, int current_size)
 {
-    printf("WaitQueueReeds %d:\n", rank);
+    
+    char buff[1024];
+    buff[0]='\0';
     for (int i = 0; i < current_size; i++)
-    {
-        printf("Request %d: PID = %d, Timestamp = %d\n", i, WaitQueueReeds[i].pid, WaitQueueReeds[i].timestamp);
+    {   
+        char temp[100];
+        snprintf(temp,sizeof(temp),"Request %d: PID = %d, Timestamp = %d\n", i, WaitQueueReeds[i].pid, WaitQueueReeds[i].timestamp);
+        strncat(buff, temp, sizeof(buff)-strlen(buff)-1);
     }
+    printf("WaitQueueReeds %d:\n", rank);
+    printf("%s",buff);
 }

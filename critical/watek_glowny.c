@@ -21,12 +21,9 @@ void mainLoop()
 				println("Ubiegam się o trzcinę (sekcję krytyczną)")
 					debug("Zmieniam stan na wysyłanie");
 				packet_t *pkt = malloc(sizeof(packet_t));
-				ackNumReed = 0;
-				reqNumReed = 0;
-				add_reed_request(rank, lamport, WaitQueueReeds, &reqNumReed); // dodanie samego siebie do kolejki
+				//add_reed_request(rank, lamport, WaitQueueReeds, &reqNumReed); // dodanie samego siebie do kolejki
 				changeState(WAIT_REED);
 				for (int i = 0; i <= size - 1; i++)
-					if (i != rank)
 						sendPacket(pkt, i, REQreed);
 				
 				free(pkt);
@@ -47,9 +44,9 @@ void mainLoop()
 				}
 			}
 
-			if (ackNumReed == size - 1)
+			if (ackNumReed == size)
 			{
-				printWaitQueueReeds(WaitQueueReeds, reqNumReed);
+				
 				// Znajdź indeks requestu o pid == rank
 				int reedIndex = -1;
 				for (int i = 0; i < size; ++i)
@@ -66,14 +63,14 @@ void mainLoop()
 				int reedId = reedIndex % (size / t);
 				// Oblicz jako który z kolei powinien dany proces na trzcinę wejść.
 				int indexInReed = reedIndex / (size / t);
-				printf("%d %d %d\n",rank, reedId, indexInReed);
+				printf("%d %d %d,%d\n",rank, reedId, indexInReed, reeds[reedId]);
 
 				if (reeds[reedId] == indexInReed) // czy jest nasza kolej aby wejść na trzcinę
 				{
 					println("Zmieniam stan na ON_REED 2");
 					changeState(ON_REED);
 				} else { // jeżeli nie to ustaw zmienną sterującą, aby niepotrzebnie nie obliczać wszystkiego jeszcze raz
-					ackReedFull = TRUE;
+					ackReedFull = FALSE;
 				}
 
 				

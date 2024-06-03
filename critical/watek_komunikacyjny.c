@@ -39,7 +39,7 @@ void *startKomWatek(void *ptr)
             int pid = pakiet.src;
             add_reed_request(pid, timestamp, WaitQueueReeds, &reqNumReed);
             sendPacket(0, status.MPI_SOURCE, ACKreed);
-
+            //printWaitQueueReeds(WaitQueueReeds, reqNumReed);
             break;
 
         case ACKreed:
