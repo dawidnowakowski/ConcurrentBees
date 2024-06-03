@@ -8,6 +8,7 @@
 
 extern int lamport;
 extern int reqNumFlower;
+extern int reeds[];
 // pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 /* wątek komunikacyjny; zajmuje się odbiorem i reakcją na komunikaty */
 void *startKomWatek(void *ptr)
@@ -22,7 +23,7 @@ void *startKomWatek(void *ptr)
     {
         debug("czekam na recv");
         MPI_Recv(&pakiet, 1, MPI_PAKIET_T, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        
+
         pthread_mutex_lock(&stateMut);
         int oldLamport = lamport;
         lamport = max(pakiet.ts, lamport) + 1;
@@ -41,40 +42,44 @@ void *startKomWatek(void *ptr)
 
             break;
 
-
         case ACKreed:
             debug("Dostałem ACKreed od %d, mam już %d", status.MPI_SOURCE, ackNumReed);
-            if (stan == WAIT_REED){
+            if (stan == WAIT_REED)
+            {
                 ackNumReed++;
             }
-            
+
             break;
 
         case REQflower:
             debug("Dostałem REQflower od %d", status.MPI_SOURCE);
-            if (stan == REST || stan == WAIT_REED || stan == ON_REED){ 
+            if (stan == REST || stan == WAIT_REED || stan == ON_REED)
+            {
                 sendPacket(0, status.MPI_SOURCE, ACKflower);
             }
-            else if (stan == ON_FLOWER){
+            else if (stan == ON_FLOWER)
+            {
                 add_flower_request(pid, timestamp, WaitQueueFlowers, &reqNumFlower);
                 reqNumFlower++;
             }
-            else if(stan == WAIT_FLOWER){
-                if (pakiet.ts<oldLamport)
+            else if (stan == WAIT_FLOWER)
+            {
+                if (pakiet.ts < oldLamport)
                 {
                     sendPacket(0, status.MPI_SOURCE, ACKflower);
                 }
-                else{
+                else
+                {
                     add_flower_request(pid, timestamp, WaitQueueFlowers, &reqNumFlower);
                     reqNumFlower++;
                 }
             }
-            
+
             break;
-        
+
         case ACKflower:
             debug("Dostałem ACKflower od %d, mam już %d", status.MPI_SOURCE, ackNumFlower);
-            if(stan == WAIT_FLOWER)
+            if (stan == WAIT_FLOWER)
             {
                 ackNumFlower++;
             }
@@ -82,7 +87,11 @@ void *startKomWatek(void *ptr)
 
         case RELEASEreed:
             debug("Dostałem RELEASEreed od %d", status.MPI_SOURCE);
-            
+            int index = pakiet.ts; // po otrzymaniu indexu zwolnionej trzicny zwiększ wartość na jej indexie o 1. 
+            if (index >= 0 && index < t)
+            {
+                reeds[index]++;
+            }
             break;
 
         default:
@@ -90,7 +99,6 @@ void *startKomWatek(void *ptr)
         }
     }
 }
-
 
 // rudy
 // stan REST: wydaje mi się, że mamy błąd w algorytmie i w stanie REST jako reakcja na REQreed powinniśmy odsyłać ACK, ale też wstawiać request do tablicy. Dodałem obsługę tego, ale przemyśl czy dobrze gadam. Poza tym stan REST powinien być skończony

@@ -108,6 +108,7 @@ void add_reed_request(int pid, int timestamp, request *WaitQueueReeds, int *curr
     request new_request = {pid, timestamp};
 
     WaitQueueReeds[*current_size] = new_request;
+    
     (*current_size)++;
 
     // posortuj tablicę po dodaniu nowego elementu
@@ -118,4 +119,13 @@ void add_flower_request(int pid, int timestamp, request *WaitQueueFlowers, int *
 {
     request new_request = {pid, timestamp};
     WaitQueueFlowers[*current_size] = new_request;
+}
+
+void printWaitQueueReeds(request *WaitQueueReeds, int current_size)
+{
+    printf("WaitQueueReeds %d:\n", rank);
+    for (int i = 0; i < current_size; i++)
+    {
+        printf("Request %d: PID = %d, Timestamp = %d\n", i, WaitQueueReeds[i].pid, WaitQueueReeds[i].timestamp);
+    }
 }

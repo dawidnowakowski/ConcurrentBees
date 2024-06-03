@@ -21,6 +21,8 @@ int reqNumReed = 0;
 
 request WaitQueueFlowers[p];
 request WaitQueueReeds[p];
+int reeds[t];
+
 /*
  * Każdy proces ma dwa wątki - główny i komunikacyjny
  * w plikach, odpowiednio, watek_glowny.c oraz (siurpryza) watek_komunikacyjny.c
@@ -76,8 +78,13 @@ int main(int argc, char **argv)
     srand(rank);
     // inicjalizacja pakietów
     /* zob. util.c oraz util.h */
-    inicjuj_typ_pakietu(); 
+    inicjuj_typ_pakietu();
 
+    // wypełnij tablicę zerami, opis w util.h
+    for (int i = 0; i < t; ++i)
+    {
+        reeds[i] = 0;
+    }
 
     // pobranie ilości wątków oraz rank czyli id wątku
     MPI_Comm_size(MPI_COMM_WORLD, &size);

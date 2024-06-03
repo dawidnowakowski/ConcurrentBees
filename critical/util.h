@@ -17,6 +17,7 @@ typedef struct {
 
 extern request WaitQueueFlowers[];
 extern request WaitQueueReeds[];
+extern int reeds[]; // tablica, którą każdy lokalnie aktualizuje po otrzymaniu release, informuje o tym, kogo jest kolej na wejście na danej trzcinie
 
 
 /* packet_t ma trzy pola, więc NITEMS=3. Wykorzystane w inicjuj_typ_pakietu */
@@ -55,6 +56,7 @@ void add_reed_request(int pid, int timestamp, request *WaitQueueReeds, int *curr
 
 void add_flower_request(int pid, int timestamp, request *WaitQueueFlowers, int *current_size);
 
+void printWaitQueueReeds(request *WaitQueueReeds, int current_size);
 
 typedef enum
 {

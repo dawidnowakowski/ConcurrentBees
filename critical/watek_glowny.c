@@ -6,7 +6,8 @@ void mainLoop()
 	srandom(rank); // seed dla generatora
 	int tag;	   // tagi dostępne są w util.h
 	int perc;	   // deklaracja zmiennej, która będzie decydować, czy proces chce wykonać akcję czy poczeka.
-
+	int reedId, indexInReed;
+	int ackReedFull = FALSE;
 	while (stan != InFinish)
 	{
 		switch (stan)
@@ -22,7 +23,6 @@ void mainLoop()
 				packet_t *pkt = malloc(sizeof(packet_t));
 				ackNumReed = 0;
 				reqNumReed = 0;
-				int canEnter = FALSE;
 				add_reed_request(rank, lamport, WaitQueueReeds, &reqNumReed); // dodanie samego siebie do kolejki
 				changeState(WAIT_REED);
 				for (int i = 0; i <= size - 1; i++)
@@ -36,8 +36,20 @@ void mainLoop()
 		case WAIT_REED:
 			println("Czekam na wejście do sekcji krytycznej");
 			// printf("%d, %d, %d\n",rank, ackNumReed, size - 1);
+
+			if (ackReedFull)
+			{
+				if (reeds[reedId] == indexInReed) // czy jest nasza kolej aby wejść na trzcinę
+				{
+					println("Zmieniam stan na ON_REED 1");
+					changeState(ON_REED);
+					break;
+				}
+			}
+
 			if (ackNumReed == size - 1)
 			{
+				printWaitQueueReeds(WaitQueueReeds, reqNumReed);
 				// Znajdź indeks requestu o pid == rank
 				int reedIndex = -1;
 				for (int i = 0; i < size; ++i)
@@ -54,12 +66,17 @@ void mainLoop()
 				int reedId = reedIndex % (size / t);
 				// Oblicz jako który z kolei powinien dany proces na trzcinę wejść.
 				int indexInReed = reedIndex / (size / t);
-				if (indexInReed == 0){
+				printf("%d %d %d\n",rank, reedId, indexInReed);
 
+				if (reeds[reedId] == indexInReed) // czy jest nasza kolej aby wejść na trzcinę
+				{
+					println("Zmieniam stan na ON_REED 2");
+					changeState(ON_REED);
+				} else { // jeżeli nie to ustaw zmienną sterującą, aby niepotrzebnie nie obliczać wszystkiego jeszcze raz
+					ackReedFull = TRUE;
 				}
 
-				println("Zmieniam stan na ON_REED");
-				changeState(ON_REED);
+				
 			}
 
 			break;
