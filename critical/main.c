@@ -77,7 +77,7 @@ int main(int argc, char **argv)
     int provided;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     check_thread_support(provided);
-    srand(rank);
+    //srand(rank);
     // inicjalizacja pakietów
     /* zob. util.c oraz util.h */
     inicjuj_typ_pakietu();
@@ -92,6 +92,9 @@ int main(int argc, char **argv)
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    srand(time(NULL)+rank);
+    lamport=rand()%(size+1);
+    println("Początkowy lamport %d", lamport);
     /* startKomWatek w watek_komunikacyjny.c */
     pthread_create(&threadKom, NULL, startKomWatek, 0);
 

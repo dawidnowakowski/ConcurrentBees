@@ -28,7 +28,6 @@ void mainLoop()
 				pthread_mutex_unlock(&stateMut);
 				changeState(WAIT_REED);
 				for (int i = 0; i <= size - 1; i++)
-					// sendPacket(pkt, i, REQreed);
 					sendREQ(pkt, i, REQreed);
 
 				free(pkt);
@@ -40,20 +39,21 @@ void mainLoop()
 			// printf("%d, %d, %d\n",rank, ackNumReed, size - 1);
 
 			if (ackReedFull)
-			{
-				if (reeds[reedId] == indexInReed) // czy jest nasza kolej aby wejść na trzcinę
+			{	
+				if (reeds[reedId] > 2)
+				{ // jeżeli > 2 to znaczy, że już zostało żlożone 15 jaj i nie można wejść
+					println("Trzcina już jest przepełniona, nie można wejść");
+				}
+				else if (reeds[reedId] == indexInReed) // czy jest nasza kolej aby wejść na trzcinę
 				{
 					println("Doczekałem się, zmieniam stan na ON_REED");
 					changeState(ON_REED);
 					break;
 				}
-				else if (reeds[reedId] > 2)
-				{ // jeżeli > 2 to znaczy, że już zostało żlożone 15 jaj i nie można wejść
-					println("Trzcina już jest przepełniona, nie można wejść");
-				}
+				
 			}
 
-			if (ackNumReed == size)
+			else if (ackNumReed == size)
 			{
 
 				// Znajdź indeks requestu o pid == rank

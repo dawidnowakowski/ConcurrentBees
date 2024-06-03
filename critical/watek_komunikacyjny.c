@@ -24,7 +24,6 @@ void *startKomWatek(void *ptr)
     {
         debug("czekam na recv");
         MPI_Recv(&pakiet, 1, MPI_PAKIET_T, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-
         pthread_mutex_lock(&stateMut);
         int oldLamport = lamport;
         lamport = max(pakiet.ts, lamport) + 1;
@@ -75,6 +74,13 @@ void *startKomWatek(void *ptr)
                 {
                     debug("Dostałem REQflower od %d, czekam na kwiatek, ale mój lamport jest większy (%d), więc odsyłam ACK", status.MPI_SOURCE, oldLamport);
                     sendPacket(0, status.MPI_SOURCE, ACKflower);
+                }
+                else if (pakiet.ts == oldLamport)
+                {
+                    if (pakiet.src < rank){
+                        debug("Dostałem REQflower od %d, czekam na kwiatek, mój lamport jest taki sam, ale mam większy PID (%d), więc odsyłam ACK", status.MPI_SOURCE, rank);
+                    sendPacket(0, status.MPI_SOURCE, ACKflower);
+                    }
                 }
                 else
                 {
