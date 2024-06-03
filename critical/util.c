@@ -8,7 +8,7 @@ MPI_Datatype MPI_RELEASE;
  * tutaj w util.c state_t stan (czyli faktyczna definicja)
  */
 // state_t stan = REST; // początkowy stan to REST
-state_t stan = InRun; // początkowy stan to REST
+state_t stan = REST; // początkowy stan to REST
 extern int lamport;   // lamport jest zainicjaluzowany w main.c
 
 pthread_mutex_t stateMut = PTHREAD_MUTEX_INITIALIZER; // muteks na zmianę stanu
@@ -101,7 +101,7 @@ int compare_requests(const void *a, const void *b)
 }
 
 // funkcja dodająca nowy request do tablicy WaitQueueReeds, current_size powinen być ackNumReed
-void add_request(int pid, int timestamp, request *WaitQueueReeds, int *current_size)
+void add_reed_request(int pid, int timestamp, request *WaitQueueReeds, int *current_size)
 {
     request new_request = {pid, timestamp};
 
@@ -110,4 +110,10 @@ void add_request(int pid, int timestamp, request *WaitQueueReeds, int *current_s
 
     // posortuj tablicę po dodaniu nowego elementu
     qsort(WaitQueueReeds, *current_size, sizeof(request), compare_requests);
+}
+
+void add_flower_request(int pid, int timestamp, request *WaitQueueFlowers, int *current_size)
+{
+    request new_request = {pid, timestamp};
+    WaitQueueFlowers[*current_size] = new_request;
 }

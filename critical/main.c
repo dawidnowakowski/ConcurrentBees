@@ -16,6 +16,8 @@ int ackCount = 0;
 int ackNumFlower = 0;
 int ackNumReed = 0;
 int lamport = 0;
+int reqNumFlower = 0;
+
 
 request WaitQueueFlowers[p];
 request WaitQueueReeds[p];

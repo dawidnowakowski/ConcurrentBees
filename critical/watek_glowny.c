@@ -11,24 +11,6 @@ void mainLoop()
 	{
 		switch (stan)
 		{
-		case InRun:
-			perc = random() % 100;
-			if (perc < 25)
-			{
-				debug("Perc: %d", perc);
-				println("Ubiegam się o sekcję krytyczną")
-					debug("Zmieniam stan na wysyłanie");
-				packet_t *pkt = malloc(sizeof(packet_t));
-				pkt->data = perc;
-				ackCount = 0;
-				for (int i = 0; i <= size - 1; i++)
-					if (i != rank)
-						sendPacket(pkt, i, REQUEST);
-				changeState(InWant);
-				free(pkt);
-			}
-			debug("Skończyłem myśleć");
-			break;
 
 		case REST:
 			perc = random() % 100;
@@ -39,7 +21,8 @@ void mainLoop()
 					debug("Zmieniam stan na wysyłanie");
 				packet_t *pkt = malloc(sizeof(packet_t));
 				ackNumReed = 0;
-				add_request(rank, lamport, WaitQueueReeds, &ackNumReed); // dodanie samego siebie do kolejki
+				int canEnter = FALSE;
+				add_reed_request(rank, lamport, WaitQueueReeds, &ackNumReed); // dodanie samego siebie do kolejki
 				for (int i = 0; i <= size - 1; i++)
 					if (i != rank)
 						sendPacket(pkt, i, REQreed);
@@ -63,14 +46,16 @@ void mainLoop()
 					}
 				}
 
+
 				// Oblicz do której trzciny należy dany proces
 				int reedId = reedIndex % (size / t);
 				// Oblicz jako który z kolei powinien dany proces na trzcinę wejść.
 				int indexInReed = reedIndex / (size / t);
-				// Znajdz pozycję pszczoły, która ma wejść na trzcinę po tobie
-				int nextIndex = reedIndex + t;
+				if (indexInReed ==0){
 
-				// Przejście do stanu ON_REED
+				}
+
+
 				changeState(ON_REED);
 			}
 

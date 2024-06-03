@@ -7,6 +7,7 @@
      _a > _b ? _a : _b; })
 
 extern int lamport;
+extern int reqNumFlower;
 // pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 /* wątek komunikacyjny; zajmuje się odbiorem i reakcją na komunikaty */
 void *startKomWatek(void *ptr)
@@ -21,30 +22,24 @@ void *startKomWatek(void *ptr)
     {
         debug("czekam na recv");
         MPI_Recv(&pakiet, 1, MPI_PAKIET_T, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-
+        
         pthread_mutex_lock(&stateMut);
+        int oldLamport = lamport;
         lamport = max(pakiet.ts, lamport) + 1;
         pthread_mutex_unlock(&stateMut);
 
         switch (status.MPI_TAG)
         {
-        // case REQUEST:
-        //     debug("Ktoś coś prosi. A niech ma!")
-        //         sendPacket(0, status.MPI_SOURCE, ACK);
-        //     break;
-        // case ACK:
-        //     debug("Dostałem ACK od %d, mam już %d", status.MPI_SOURCE, ackCount);
-        //     ackCount++; /* czy potrzeba tutaj muteksa? Będzie wyścig, czy nie będzie? Zastanówcie się. */
-        //     break;
 
         // projekt
         case REQreed:
-            debug("Dostałem REQreed od %d", status.MPI_SOURCE, ackNumReed);
-            if (stan == REST || stan == WAIT_REED){ //odeślij ACKreed i wstaw request do tablicy WaitQueueReeds
-                int timestamp = pakiet.ts;
-                int pid = pakiet.src;
-                add_request(pid, timestamp, WaitQueueReeds, &ackNumReed);
-                sendPacket(0, status.MPI_SOURCE, ACKreed);
+            debug("Dostałem REQreed od %d", status.MPI_SOURCE);
+            sendPacket(0, status.MPI_SOURCE, ACKreed);
+            int timestamp = pakiet.ts;
+            int pid = pakiet.src;
+            add_reed_request(pid, timestamp, WaitQueueReeds, &ackNumReed);
+            sendPacket(0, status.MPI_SOURCE, ACKreed);
+
             break;
 
 
@@ -57,19 +52,38 @@ void *startKomWatek(void *ptr)
             break;
 
         case REQflower:
-            debug("Dostałem REQflower od %d", status.MPI_SOURCE, ackNumReed);
-            if (stan == REST || stan == WAIT_REED){ //odeślij ACKflower
+            debug("Dostałem REQflower od %d", status.MPI_SOURCE);
+            if (stan == REST || stan == WAIT_REED || stan == ON_REED){ 
                 sendPacket(0, status.MPI_SOURCE, ACKflower);
+            }
+            else if (stan == ON_FLOWER){
+                add_flower_request(pid, timestamp, WaitQueueFlowers, &reqNumFlower);
+                reqNumFlower++;
+            }
+            else if(stan == WAIT_FLOWER){
+                if (pakiet.ts<oldLamport)
+                {
+                    sendPacket(0, status.MPI_SOURCE, ACKflower);
+                }
+                else{
+                    add_flower_request(pid, timestamp, WaitQueueFlowers, &reqNumFlower);
+                    reqNumFlower++;
+                }
             }
             
             break;
         
         case ACKflower:
             debug("Dostałem ACKreed od %d, mam już %d", status.MPI_SOURCE, ackNumFlower);
+            if(stan == WAIT_FLOWER)
+            {
+                ackNumFlower++;
+            }
             break;
 
         case RELEASEreed:
             debug("Dostałem RELEASEreed od %d", status.MPI_SOURCE);
+            
             break;
 
         default:

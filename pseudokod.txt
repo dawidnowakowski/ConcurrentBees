@@ -48,7 +48,7 @@ Szczegółowy opis algorytmu dla procesu i:
       1.1. Proces i przebywa w stanie REST do czasu, aż podejmie decyzję o ubieganie się o sekcję krytyczną (trzcinę). Ze stanu REST następuje przejście do stanu WAIT_REED po umieszczeniu siebie w kolejce WaitQueueReeds, wysłaniu wiadomości REQreed do wszystkich innych procesów oraz ustawieniu ACKreed na zero. Wszystkie wiadomości REQreed są opisane tym samym priorytetem, równym zegarowi Lamporta w chwili wysłania pierwszej wiadomości REQreed.
       1.2. Reakcje na wiadomości:
          a. REQflower: odsyła ACKflower
-         b. REQreed: odsyła ACKreed
+         b. REQreed: Po otrzymaniu REQreed od procesu j-tego, proces i-ty wstawia żądanie do lokalnej kolejki żądań (posortowanej po ich znacznikach czasowych/priorytetach). Nastepnie proces i-ty odsyła do procesu j-tego ACKreed.
          c. ACKflower: ignoruje (sytuacja niemożliwa)
          d. ACKreed: ignoruje (sytuacja niemożliwa)
          e. RELEASEreed: proces aktualizuje lokalną kolejkę żądań WaitQueueReeds. Z WaitQueueReeds usuwane jest żądanie procesu, którego pid jest zawarty w wiadomości, a reszta żądań jest przesuwana o jedną pozycję do przodu.

@@ -51,7 +51,10 @@ void sendPacket(packet_t *pkt, int destination, int tag);
 
 int compare_requests(const void *a, const void *b);
 
-void add_request(int pid, int timestamp, request *WaitQueueReeds, int *current_size);
+void add_reed_request(int pid, int timestamp, request *WaitQueueReeds, int *current_size);
+
+void add_flower_request(int pid, int timestamp, request *WaitQueueFlowers, int *current_size);
+
 
 typedef enum
 {

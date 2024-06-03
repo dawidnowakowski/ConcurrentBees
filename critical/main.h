@@ -22,6 +22,7 @@ extern int ackCount;
 extern pthread_t threadKom;
 extern int lamport;
 
+
 //projekt
 
 #define t 3 // trzciny, pszczół może być max. t * 3 (bo jedna trzicna to max. 15 jaj, a jedna pszczoła składa 5 jaj)
@@ -32,6 +33,7 @@ extern int ackNumReed; // licznik otrzymanych ACKreed, początkowo 0
 extern int layedEggs; // licznik złożonych jaj, początkowo 0, max. 5
 #define FULL 0
 #define AVAILABLE 1
+extern int reqNumFlower; //liczba requestów umieszczonych w WaitQueueFlower
 
 
 /* macro debug - działa jak printf, kiedy zdefiniowano
