@@ -24,17 +24,18 @@ void mainLoop()
 				reqNumReed = 0;
 				int canEnter = FALSE;
 				add_reed_request(rank, lamport, WaitQueueReeds, &reqNumReed); // dodanie samego siebie do kolejki
+				changeState(WAIT_REED);
 				for (int i = 0; i <= size - 1; i++)
 					if (i != rank)
 						sendPacket(pkt, i, REQreed);
-				changeState(WAIT_REED);
+				
 				free(pkt);
 			}
 			debug("Skończyłem myśleć");
 			break;
 		case WAIT_REED:
 			println("Czekam na wejście do sekcji krytycznej");
-			// printf("%d, %d\n",ackNumReed, size - 1);
+			// printf("%d, %d, %d\n",rank, ackNumReed, size - 1);
 			if (ackNumReed == size - 1)
 			{
 				// Znajdź indeks requestu o pid == rank
