@@ -50,6 +50,8 @@ void inicjuj_typ_pakietu();
 /* wysyłanie pakietu, skrót: wskaźnik do pakietu (0 oznacza stwórz pusty pakiet), do kogo, z jakim typem */
 void sendPacket(packet_t *pkt, int destination, int tag);
 
+void sendREQreed(packet_t *pkt, int destination, int tag);
+
 int compare_requests(const void *a, const void *b);
 
 void add_reed_request(int pid, int timestamp, request *WaitQueueReeds, int *current_size);

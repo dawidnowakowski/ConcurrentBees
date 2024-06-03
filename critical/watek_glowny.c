@@ -3,7 +3,7 @@
 
 void mainLoop()
 {
-	srandom(rank-1); // seed dla generatora
+	srandom(rank-100); // seed dla generatora
 	int tag;	   // tagi dostępne są w util.h
 	int perc;	   // deklaracja zmiennej, która będzie decydować, czy proces chce wykonać akcję czy poczeka.
 	int reedId, indexInReed;
@@ -21,10 +21,14 @@ void mainLoop()
 				println("Ubiegam się o trzcinę (sekcję krytyczną)")
 					debug("Zmieniam stan na wysyłanie");
 				packet_t *pkt = malloc(sizeof(packet_t));
-				//add_reed_request(rank, lamport, WaitQueueReeds, &reqNumReed); // dodanie samego siebie do kolejki
+				pkt->ts = lamport;
+				pthread_mutex_lock(&stateMut);
+    				++lamport;
+    			pthread_mutex_unlock(&stateMut);
 				changeState(WAIT_REED);
 				for (int i = 0; i <= size - 1; i++)
-						sendPacket(pkt, i, REQreed);
+						// sendPacket(pkt, i, REQreed);
+						sendREQreed(pkt, i, REQreed);
 				
 				free(pkt);
 			}

@@ -74,6 +74,13 @@ void sendPacket(packet_t *pkt, int destination, int tag)
         free(pkt);
 }
 
+void sendREQreed(packet_t *pkt, int destination, int tag)
+{
+    pkt->src = rank;
+    MPI_Send(pkt, 1, MPI_PAKIET_T, destination, tag, MPI_COMM_WORLD);
+    debug("Wysyłam %s do %d\n", tag2string(tag), destination);
+}
+
 void changeState(state_t newState)
 {
     pthread_mutex_lock(&stateMut);
@@ -99,7 +106,7 @@ int compare_requests(const void *a, const void *b)
         return req1->timestamp - req2->timestamp;
     }
     // Sortowanie malejące po pid, gdy timestampy są równe
-    return req2->pid - req1->pid;
+    return req1->pid - req2->pid;
 }
 
 // funkcja dodająca nowy request do tablicy WaitQueueReeds, current_size powinen być ackNumReed

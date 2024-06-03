@@ -40,10 +40,10 @@ void *startKomWatek(void *ptr)
             add_reed_request(pid, timestamp, WaitQueueReeds, &reqNumReed);
             sendPacket(0, status.MPI_SOURCE, ACKreed);
             // printWaitQueueReeds(WaitQueueReeds, reqNumReed);
-            // if (reqNumReed == size)
-            // {
-            //     printWaitQueueReeds(WaitQueueReeds, reqNumReed);
-            // }
+            if (reqNumReed == size)
+            {
+                printWaitQueueReeds(WaitQueueReeds, reqNumReed);
+            }
             break;
 
         case ACKreed:
