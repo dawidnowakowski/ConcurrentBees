@@ -74,7 +74,7 @@ void sendPacket(packet_t *pkt, int destination, int tag)
         free(pkt);
 }
 
-void sendREQreed(packet_t *pkt, int destination, int tag)
+void sendREQ(packet_t *pkt, int destination, int tag)
 {
     pkt->src = rank;
     MPI_Send(pkt, 1, MPI_PAKIET_T, destination, tag, MPI_COMM_WORLD);
@@ -124,8 +124,17 @@ void add_reed_request(int pid, int timestamp, request *WaitQueueReeds, int *curr
 
 void add_flower_request(int pid, int timestamp, request *WaitQueueFlowers, int *current_size)
 {
+    // Sprawdzenie, czy request o danym pid już istnieje w kolejce
+    for (int i = 0; i < *current_size; i++) {
+        if (WaitQueueFlowers[i].pid == pid) {
+            return;
+        }
+    }
+
+    // Jeśli request o danym pid nie istnieje, dodajemy nowy request
     request new_request = {pid, timestamp};
     WaitQueueFlowers[*current_size] = new_request;
+    (*current_size)++;
 }
 
 void printWaitQueueReeds(request *WaitQueueReeds, int current_size)

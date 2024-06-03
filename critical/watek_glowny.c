@@ -3,11 +3,12 @@
 
 void mainLoop()
 {
-	srandom(rank-100); // seed dla generatora
-	int tag;	   // tagi dostępne są w util.h
-	int perc;	   // deklaracja zmiennej, która będzie decydować, czy proces chce wykonać akcję czy poczeka.
+	srandom(rank - 100); // seed dla generatora
+	int tag;			 // tagi dostępne są w util.h
+	int perc;			 // deklaracja zmiennej, która będzie decydować, czy proces chce wykonać akcję czy poczeka.
 	int reedId, indexInReed;
 	int ackReedFull = FALSE;
+	int hasNectar = FALSE;
 	while (stan != InFinish)
 	{
 		switch (stan)
@@ -23,34 +24,36 @@ void mainLoop()
 				packet_t *pkt = malloc(sizeof(packet_t));
 				pkt->ts = lamport;
 				pthread_mutex_lock(&stateMut);
-    				++lamport;
-    			pthread_mutex_unlock(&stateMut);
+				++lamport;
+				pthread_mutex_unlock(&stateMut);
 				changeState(WAIT_REED);
 				for (int i = 0; i <= size - 1; i++)
-						// sendPacket(pkt, i, REQreed);
-						sendREQreed(pkt, i, REQreed);
-				
+					// sendPacket(pkt, i, REQreed);
+					sendREQ(pkt, i, REQreed);
+
 				free(pkt);
 			}
 			debug("Skończyłem myśleć");
 			break;
 		case WAIT_REED:
-			println("Czekam na wejście do sekcji krytycznej");
+			// println("Czekam na wejście na trzcinę (do sekcji krytycznej)");
 			// printf("%d, %d, %d\n",rank, ackNumReed, size - 1);
 
 			if (ackReedFull)
 			{
 				if (reeds[reedId] == indexInReed) // czy jest nasza kolej aby wejść na trzcinę
 				{
-					println("Zmieniam stan na ON_REED 1");
+					println("Doczekałem się, zmieniam stan na ON_REED");
 					changeState(ON_REED);
 					break;
+				} else if (reeds[reedId] > 2){ // jeżeli > 2 to znaczy, że już zostało żlożone 15 jaj i nie można wejść
+					println("Trzcina już jest przepełniona, nie można wejść");
 				}
 			}
 
 			if (ackNumReed == size)
 			{
-				
+
 				// Znajdź indeks requestu o pid == rank
 				int reedIndex = -1;
 				for (int i = 0; i < size; ++i)
@@ -62,49 +65,115 @@ void mainLoop()
 					}
 				}
 
-
 				// Oblicz do której trzciny należy dany proces
-				reedId = reedIndex % (size / t);
+				reedId = reedIndex % t;
 				// Oblicz jako który z kolei powinien dany proces na trzcinę wejść.
-				indexInReed = reedIndex / (size / t);
-				// printf("%d %d %d,%d\n",rank, reedId, indexInReed, reeds[reedId]);
+				indexInReed = reedIndex / t;
+				// printf("REEDID %d %d %d,%d\n",rank, reedId, indexInReed, reeds[reedId]);
 
 				if (reeds[reedId] == indexInReed) // czy jest nasza kolej aby wejść na trzcinę
 				{
-					println("Zmieniam stan na ON_REED 2");
+					println("Jestem pierwszy w kolejce, zmieniam stan na ON_REED");
 					changeState(ON_REED);
-				} else { // jeżeli nie to ustaw zmienną sterującą, aby niepotrzebnie nie obliczać wszystkiego jeszcze raz
+				}
+				else
+				{ // jeżeli nie to ustaw zmienną sterującą, aby niepotrzebnie nie obliczać wszystkiego jeszcze raz
 					ackReedFull = TRUE;
 				}
-
-				
 			}
 
 			break;
-		// case InWant:
-		// 	println("Czekam na wejście do sekcji krytycznej")
-		// 		// tutaj zapewne jakiś semafor albo zmienna warunkowa
-		// 		// bo aktywne czekanie jest BUE
-		// 		if (ackCount == size - 1)
-		// 			changeState(InSection);
-		// 	break;
-		// case InSection:
-		// 	// tutaj zapewne jakiś muteks albo zmienna warunkowa
-		// 	println("Jestem w sekcji krytycznej")
-		// 		sleep(5);
-		// 	// if ( perc < 25 ) {
-		// 	debug("Perc: %d", perc);
-		// 	println("Wychodzę z sekcji krytycznej")
-		// 		debug("Zmieniam stan na wysyłanie");
-		// 	packet_t *pkt = malloc(sizeof(packet_t));
-		// 	pkt->data = perc;
-		// 	for (int i = 0; i <= size - 1; i++)
-		// 		if (i != rank)
-		// 			sendPacket(pkt, (rank + 1) % size, RELEASE);
-		// 	changeState(InRun);
-		// 	free(pkt);
-		// 	//}
-		// 	break;
+
+		case ON_REED:
+			perc = random() % 100;
+			if (perc < 25)
+			{
+				if (hasNectar)
+				{
+					println("Składam jajo na trzcinie");
+					layedEggs++;
+					hasNectar = FALSE;
+					// printf("jajo %d %d\n", rank, layedEggs);
+
+					if (layedEggs == 3)
+					{
+						println("Złożyłem już 5 jaj, umieram albo wracam");
+						
+						// wyślij, że zwalniasz trzcinę do wszystkich
+						packet_t *pkt = malloc(sizeof(packet_t));
+						pthread_mutex_lock(&stateMut);
+						pkt->ts = lamport;
+						++lamport;
+						pthread_mutex_unlock(&stateMut);
+						pkt->data = reedId;
+						changeState(DEAD);
+						
+						for (int i = 0; i <= size - 1; i++)
+							sendREQ(pkt, i, RELEASEreed);
+						free(pkt);
+						println("Umarłam");
+					}
+					else
+					{
+						println("Nie złożyłem wszystkich jaj, wracam na trzcinę");
+						changeState(ON_REED);
+					}
+				}
+				else
+				{
+					debug("Perc: %d", perc);
+					println("Ubiegam się o kwiatek (sekcję krytyczną)")
+						debug("Zmieniam stan na wysyłanie");
+					packet_t *pkt = malloc(sizeof(packet_t));
+					pthread_mutex_lock(&stateMut);
+					pkt->ts = lamport;
+					++lamport;
+					pthread_mutex_unlock(&stateMut);
+					changeState(WAIT_FLOWER);
+					debug("Wysyłam REQflower");
+					for (int i = 0; i <= size - 1; i++)
+						sendREQ(pkt, i, REQflower);
+					free(pkt);
+				}
+			}
+			break;
+		case WAIT_FLOWER:
+			// println("Czekam na wejście na kwiatek (do sekcji krytycznej)");
+			// printf("pk %d, %d, %d\n", p, k, ackNumFlower);
+			if (ackNumFlower >= p - k)
+			{
+				println("Wchodzę na kwiatek (do sekcji krytycznej)");
+				changeState(ON_FLOWER);
+			}
+			break;
+		case ON_FLOWER:
+			
+			perc = random() % 100;
+			if (perc < 25)
+			{
+				debug("Perc: %d", perc);
+				println("Jestem na kwiatku i zbieram nektar");
+				hasNectar = TRUE;
+				changeState(ON_REED);
+
+				// przy opuszczaniu kwiatka poinformuj wszystkich, którzy czekają, że mogą wejść
+				packet_t *pkt = malloc(sizeof(packet_t));
+				pthread_mutex_lock(&stateMut);
+				pkt->ts = lamport;
+				++lamport;
+				pthread_mutex_unlock(&stateMut);
+				for (int i = 0; i < reqNumFlower; i++)
+				{
+					sendPacket(pkt, WaitQueueFlowers[i].pid, ACKflower);
+				}
+				reqNumFlower = 0; // wyzeruj kolejkę
+				ackNumFlower = 0; // wyzeruj liczbę pozwoleń
+			}
+
+			break;
+		case DEAD:
+			
+			break;
 
 		default:
 			break;

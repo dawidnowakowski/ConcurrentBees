@@ -17,7 +17,7 @@ typedef struct {
 
 extern request WaitQueueFlowers[];
 extern request WaitQueueReeds[];
-extern int reeds[]; // tablica, którą każdy lokalnie aktualizuje po otrzymaniu release, informuje o tym, kogo jest kolej na wejście na danej trzcinie
+
 
 
 /* packet_t ma trzy pola, więc NITEMS=3. Wykorzystane w inicjuj_typ_pakietu */
@@ -50,7 +50,7 @@ void inicjuj_typ_pakietu();
 /* wysyłanie pakietu, skrót: wskaźnik do pakietu (0 oznacza stwórz pusty pakiet), do kogo, z jakim typem */
 void sendPacket(packet_t *pkt, int destination, int tag);
 
-void sendREQreed(packet_t *pkt, int destination, int tag);
+void sendREQ(packet_t *pkt, int destination, int tag);
 
 int compare_requests(const void *a, const void *b);
 

@@ -25,9 +25,9 @@ extern int lamport;
 
 //projekt
 
-#define t 3 // trzciny, pszczół może być max. t * 3 (bo jedna trzicna to max. 15 jaj, a jedna pszczoła składa 5 jaj)
-#define p 9 // pszczółki, <1; t*3>
-#define k 2 // kwiatki, dowolna ilość, ale > 0
+#define t 2 // trzciny, pszczół może być max. t * 3 (bo jedna trzicna to max. 15 jaj, a jedna pszczoła składa 5 jaj)
+#define p 6 // pszczółki, <1; t*3>
+#define k 1 // kwiatki, dowolna ilość, ale > 0
 extern int ackNumFlower; // licznik otrzymanych ACKflower, początkowo 0
 extern int ackNumReed; // licznik otrzymanych ACKreed, początkowo 0
 extern int layedEggs; // licznik złożonych jaj, początkowo 0, max. 5
@@ -35,7 +35,7 @@ extern int layedEggs; // licznik złożonych jaj, początkowo 0, max. 5
 #define AVAILABLE 1
 extern int reqNumFlower; //liczba requestów umieszczonych w WaitQueueFlower
 extern int reqNumReed;
-
+extern int reeds[]; // tablica, którą każdy lokalnie aktualizuje po otrzymaniu release, informuje o tym, kogo jest kolej na wejście na danej trzcinie
 
 /* macro debug - działa jak printf, kiedy zdefiniowano
    DEBUG, kiedy DEBUG niezdefiniowane działa jak instrukcja pusta
