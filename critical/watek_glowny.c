@@ -88,16 +88,16 @@ void mainLoop()
 			perc = random() % 100;
 			if (perc < 25)
 			{
+				debug("Perc: %d", perc);
 				if (hasNectar)
 				{
-					println("Składam jajo na trzcinie");
 					layedEggs++;
 					hasNectar = FALSE;
 					// printf("jajo %d %d\n", rank, layedEggs);
 
 					if (layedEggs == 3)
 					{
-						println("Złożyłem już 5 jaj, umieram albo wracam");
+						println("Składam jajo, Złożyłam już 5 jaj, umieram albo zostaję na trzcinie");
 						
 						// wyślij, że zwalniasz trzcinę do wszystkich
 						packet_t *pkt = malloc(sizeof(packet_t));
@@ -115,13 +115,12 @@ void mainLoop()
 					}
 					else
 					{
-						println("Nie złożyłem wszystkich jaj, wracam na trzcinę");
-						changeState(ON_REED);
+						println("Składam jajo, Nie złożyłam wszystkich jaj, zostaję na trzcinie");
 					}
 				}
 				else
 				{
-					debug("Perc: %d", perc);
+					
 					println("Ubiegam się o kwiatek (sekcję krytyczną)")
 						debug("Zmieniam stan na wysyłanie");
 					packet_t *pkt = malloc(sizeof(packet_t));
@@ -164,6 +163,7 @@ void mainLoop()
 				pthread_mutex_unlock(&stateMut);
 				for (int i = 0; i < reqNumFlower; i++)
 				{
+					// printf("ACKflower od %d do %d, %d\n", rank, WaitQueueFlowers[i].pid, reqNumFlower);
 					sendPacket(pkt, WaitQueueFlowers[i].pid, ACKflower);
 				}
 				reqNumFlower = 0; // wyzeruj kolejkę

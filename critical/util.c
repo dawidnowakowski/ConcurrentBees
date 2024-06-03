@@ -134,7 +134,6 @@ void add_flower_request(int pid, int timestamp, request *WaitQueueFlowers, int *
     // Jeśli request o danym pid nie istnieje, dodajemy nowy request
     request new_request = {pid, timestamp};
     WaitQueueFlowers[*current_size] = new_request;
-    (*current_size)++;
 }
 
 void printWaitQueueReeds(request *WaitQueueReeds, int current_size)

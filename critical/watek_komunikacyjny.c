@@ -68,6 +68,7 @@ void *startKomWatek(void *ptr)
                 debug("Dostałem REQflower od %d, ale jestem na kwiatku, więc dodaję do kolejki", status.MPI_SOURCE);
                 add_flower_request(pid, timestamp, WaitQueueFlowers, &reqNumFlower);
                 reqNumFlower++;
+                // printf("%d req inc 1 %d\n", rank, reqNumFlower);
             }
             else if (stan == WAIT_FLOWER)
             {
@@ -81,6 +82,7 @@ void *startKomWatek(void *ptr)
                     debug("Dostałem REQflower od %d, czekam na kwiatek, ale mój lamport jest mniejszy lub równy, więc dodaje go do kolejki", status.MPI_SOURCE);
                     add_flower_request(pid, timestamp, WaitQueueFlowers, &reqNumFlower);
                     reqNumFlower++;
+                    // printf("%d req inc 2 %d\n", rank, reqNumFlower);
                 }
             }
 
