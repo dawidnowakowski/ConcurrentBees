@@ -3,7 +3,7 @@
 
 void mainLoop()
 {
-	srandom(rank); // seed dla generatora
+	srandom(rank-1); // seed dla generatora
 	int tag;	   // tagi dostępne są w util.h
 	int perc;	   // deklaracja zmiennej, która będzie decydować, czy proces chce wykonać akcję czy poczeka.
 	int reedId, indexInReed;
@@ -60,17 +60,17 @@ void mainLoop()
 
 
 				// Oblicz do której trzciny należy dany proces
-				int reedId = reedIndex % (size / t);
+				reedId = reedIndex % (size / t);
 				// Oblicz jako który z kolei powinien dany proces na trzcinę wejść.
-				int indexInReed = reedIndex / (size / t);
-				printf("%d %d %d,%d\n",rank, reedId, indexInReed, reeds[reedId]);
+				indexInReed = reedIndex / (size / t);
+				// printf("%d %d %d,%d\n",rank, reedId, indexInReed, reeds[reedId]);
 
 				if (reeds[reedId] == indexInReed) // czy jest nasza kolej aby wejść na trzcinę
 				{
 					println("Zmieniam stan na ON_REED 2");
 					changeState(ON_REED);
 				} else { // jeżeli nie to ustaw zmienną sterującą, aby niepotrzebnie nie obliczać wszystkiego jeszcze raz
-					ackReedFull = FALSE;
+					ackReedFull = TRUE;
 				}
 
 				

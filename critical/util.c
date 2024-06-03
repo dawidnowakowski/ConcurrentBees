@@ -77,8 +77,8 @@ void sendPacket(packet_t *pkt, int destination, int tag)
 void changeState(state_t newState)
 {
     pthread_mutex_lock(&stateMut);
-    // if (stan == DEAD)
-    if (stan == InFinish)
+    if (stan == DEAD)
+    // if (stan == InFinish)
     {
         pthread_mutex_unlock(&stateMut);
         return;
@@ -112,7 +112,7 @@ void add_reed_request(int pid, int timestamp, request *WaitQueueReeds, int *curr
     (*current_size)++;
 
     // posortuj tablicę po dodaniu nowego elementu
-    //qsort(WaitQueueReeds, *current_size, sizeof(request), compare_requests);
+    qsort(WaitQueueReeds, *current_size, sizeof(request), compare_requests);
 }
 
 void add_flower_request(int pid, int timestamp, request *WaitQueueFlowers, int *current_size)
