@@ -27,13 +27,14 @@ extern int lamport;
 
 #define t 3 // trzciny, pszczół może być max. t * 3 (bo jedna trzicna to max. 15 jaj, a jedna pszczoła składa 5 jaj)
 #define p 9 // pszczółki, <1; t*3>
-#define k 3 // kwiatki, dowolna ilość, ale > 0
+#define k 2 // kwiatki, dowolna ilość, ale > 0
 extern int ackNumFlower; // licznik otrzymanych ACKflower, początkowo 0
 extern int ackNumReed; // licznik otrzymanych ACKreed, początkowo 0
 extern int layedEggs; // licznik złożonych jaj, początkowo 0, max. 5
 #define FULL 0
 #define AVAILABLE 1
 extern int reqNumFlower; //liczba requestów umieszczonych w WaitQueueFlower
+extern int reqNumReed;
 
 
 /* macro debug - działa jak printf, kiedy zdefiniowano
@@ -55,7 +56,7 @@ extern int reqNumFlower; //liczba requestów umieszczonych w WaitQueueFlower
 
 */
 #ifdef DEBUG
-#define debug(FORMAT, ...) printf("%c[%d;%dm [%d]: " FORMAT "%c[%d;%dm\n", 27, (1 + (rank / 7)) % 2, 31 + (6 + rank) % 7, rank, ##__VA_ARGS__, 27, 0, 37);
+#define debug(FORMAT, ...) printf("%c[%d;%dm ts:[%d] [%d]: " FORMAT "%c[%d;%dm\n", 27, (1 + (rank / 7)) % 2, 31 + (6 + rank) % 7, lamport, rank, ##__VA_ARGS__, 27, 0, 37);
 #else
 #define debug(...) ;
 #endif

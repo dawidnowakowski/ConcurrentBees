@@ -34,10 +34,9 @@ void *startKomWatek(void *ptr)
         // projekt
         case REQreed:
             debug("Dostałem REQreed od %d", status.MPI_SOURCE);
-            sendPacket(0, status.MPI_SOURCE, ACKreed);
             int timestamp = pakiet.ts;
             int pid = pakiet.src;
-            add_reed_request(pid, timestamp, WaitQueueReeds, &ackNumReed);
+            add_reed_request(pid, timestamp, WaitQueueReeds, &reqNumReed);
             sendPacket(0, status.MPI_SOURCE, ACKreed);
 
             break;
@@ -74,7 +73,7 @@ void *startKomWatek(void *ptr)
             break;
         
         case ACKflower:
-            debug("Dostałem ACKreed od %d, mam już %d", status.MPI_SOURCE, ackNumFlower);
+            debug("Dostałem ACKflower od %d, mam już %d", status.MPI_SOURCE, ackNumFlower);
             if(stan == WAIT_FLOWER)
             {
                 ackNumFlower++;

@@ -21,8 +21,9 @@ void mainLoop()
 					debug("Zmieniam stan na wysyłanie");
 				packet_t *pkt = malloc(sizeof(packet_t));
 				ackNumReed = 0;
+				reqNumReed = 0;
 				int canEnter = FALSE;
-				add_reed_request(rank, lamport, WaitQueueReeds, &ackNumReed); // dodanie samego siebie do kolejki
+				add_reed_request(rank, lamport, WaitQueueReeds, &reqNumReed); // dodanie samego siebie do kolejki
 				for (int i = 0; i <= size - 1; i++)
 					if (i != rank)
 						sendPacket(pkt, i, REQreed);
@@ -33,6 +34,7 @@ void mainLoop()
 			break;
 		case WAIT_REED:
 			println("Czekam na wejście do sekcji krytycznej");
+			// printf("%d, %d\n",ackNumReed, size - 1);
 			if (ackNumReed == size - 1)
 			{
 				// Znajdź indeks requestu o pid == rank
@@ -51,39 +53,39 @@ void mainLoop()
 				int reedId = reedIndex % (size / t);
 				// Oblicz jako który z kolei powinien dany proces na trzcinę wejść.
 				int indexInReed = reedIndex / (size / t);
-				if (indexInReed ==0){
+				if (indexInReed == 0){
 
 				}
 
-
+				println("Zmieniam stan na ON_REED");
 				changeState(ON_REED);
 			}
 
 			break;
-		case InWant:
-			println("Czekam na wejście do sekcji krytycznej")
-				// tutaj zapewne jakiś semafor albo zmienna warunkowa
-				// bo aktywne czekanie jest BUE
-				if (ackCount == size - 1)
-					changeState(InSection);
-			break;
-		case InSection:
-			// tutaj zapewne jakiś muteks albo zmienna warunkowa
-			println("Jestem w sekcji krytycznej")
-				sleep(5);
-			// if ( perc < 25 ) {
-			debug("Perc: %d", perc);
-			println("Wychodzę z sekcji krytycznej")
-				debug("Zmieniam stan na wysyłanie");
-			packet_t *pkt = malloc(sizeof(packet_t));
-			pkt->data = perc;
-			for (int i = 0; i <= size - 1; i++)
-				if (i != rank)
-					sendPacket(pkt, (rank + 1) % size, RELEASE);
-			changeState(InRun);
-			free(pkt);
-			//}
-			break;
+		// case InWant:
+		// 	println("Czekam na wejście do sekcji krytycznej")
+		// 		// tutaj zapewne jakiś semafor albo zmienna warunkowa
+		// 		// bo aktywne czekanie jest BUE
+		// 		if (ackCount == size - 1)
+		// 			changeState(InSection);
+		// 	break;
+		// case InSection:
+		// 	// tutaj zapewne jakiś muteks albo zmienna warunkowa
+		// 	println("Jestem w sekcji krytycznej")
+		// 		sleep(5);
+		// 	// if ( perc < 25 ) {
+		// 	debug("Perc: %d", perc);
+		// 	println("Wychodzę z sekcji krytycznej")
+		// 		debug("Zmieniam stan na wysyłanie");
+		// 	packet_t *pkt = malloc(sizeof(packet_t));
+		// 	pkt->data = perc;
+		// 	for (int i = 0; i <= size - 1; i++)
+		// 		if (i != rank)
+		// 			sendPacket(pkt, (rank + 1) % size, RELEASE);
+		// 	changeState(InRun);
+		// 	free(pkt);
+		// 	//}
+		// 	break;
 
 		default:
 			break;
