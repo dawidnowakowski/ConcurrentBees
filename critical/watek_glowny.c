@@ -16,7 +16,7 @@ void mainLoop()
 
 		case REST:
 			perc = random() % 100;
-			if (perc < 25)
+			if (perc < CHANCE)
 			{
 				debug("Perc: %d", perc);
 				println("Ubiegam się o trzcinę (sekcję krytyczną)")
@@ -88,7 +88,7 @@ void mainLoop()
 
 		case ON_REED:
 			perc = random() % 100;
-			if (perc < 25)
+			if (perc < CHANCE)
 			{
 				debug("Perc: %d", perc);
 				if (hasNectar)
@@ -154,7 +154,7 @@ void mainLoop()
 		case ON_FLOWER:
 
 			perc = random() % 100;
-			if (perc < 25)
+			if (perc < CHANCE)
 			{
 				debug("Perc: %d", perc);
 				println("Jestem na kwiatku i zbieram nektar");
@@ -180,7 +180,7 @@ void mainLoop()
 
 			break;
 		case DEAD:
-
+			return;
 			break;
 
 		default:
