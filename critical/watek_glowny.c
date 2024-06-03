@@ -46,7 +46,9 @@ void mainLoop()
 					println("Doczekałem się, zmieniam stan na ON_REED");
 					changeState(ON_REED);
 					break;
-				} else if (reeds[reedId] > 2){ // jeżeli > 2 to znaczy, że już zostało żlożone 15 jaj i nie można wejść
+				}
+				else if (reeds[reedId] > 2)
+				{ // jeżeli > 2 to znaczy, że już zostało żlożone 15 jaj i nie można wejść
 					println("Trzcina już jest przepełniona, nie można wejść");
 				}
 			}
@@ -95,10 +97,10 @@ void mainLoop()
 					hasNectar = FALSE;
 					// printf("jajo %d %d\n", rank, layedEggs);
 
-					if (layedEggs == 3)
+					if (layedEggs == 5)
 					{
 						println("Składam jajo, Złożyłam już 5 jaj, umieram albo zostaję na trzcinie");
-						
+
 						// wyślij, że zwalniasz trzcinę do wszystkich
 						packet_t *pkt = malloc(sizeof(packet_t));
 						pthread_mutex_lock(&stateMut);
@@ -107,7 +109,7 @@ void mainLoop()
 						pthread_mutex_unlock(&stateMut);
 						pkt->data = reedId;
 						changeState(DEAD);
-						
+
 						for (int i = 0; i <= size - 1; i++)
 							sendREQ(pkt, i, RELEASEreed);
 						free(pkt);
@@ -120,7 +122,7 @@ void mainLoop()
 				}
 				else
 				{
-					
+
 					println("Ubiegam się o kwiatek (sekcję krytyczną)")
 						debug("Zmieniam stan na wysyłanie");
 					packet_t *pkt = malloc(sizeof(packet_t));
@@ -131,7 +133,11 @@ void mainLoop()
 					changeState(WAIT_FLOWER);
 					debug("Wysyłam REQflower");
 					for (int i = 0; i <= size - 1; i++)
-						sendREQ(pkt, i, REQflower);
+						if (i != rank)
+						{
+							sendREQ(pkt, i, REQflower);
+						}
+
 					free(pkt);
 				}
 			}
@@ -139,14 +145,14 @@ void mainLoop()
 		case WAIT_FLOWER:
 			// println("Czekam na wejście na kwiatek (do sekcji krytycznej)");
 			// printf("pk %d, %d, %d\n", p, k, ackNumFlower);
-			if (ackNumFlower >= p - k)
+			if (ackNumFlower >= p - k - deadbees)
 			{
 				println("Wchodzę na kwiatek (do sekcji krytycznej)");
 				changeState(ON_FLOWER);
 			}
 			break;
 		case ON_FLOWER:
-			
+
 			perc = random() % 100;
 			if (perc < 25)
 			{
@@ -161,8 +167,10 @@ void mainLoop()
 				pkt->ts = lamport;
 				++lamport;
 				pthread_mutex_unlock(&stateMut);
+				println("Schodzę z kwiatka");
 				for (int i = 0; i < reqNumFlower; i++)
 				{
+					// debug("Wysyłam ACKflower do %d", WaitQueueFlowers[i].pid);
 					// printf("ACKflower od %d do %d, %d\n", rank, WaitQueueFlowers[i].pid, reqNumFlower);
 					sendPacket(pkt, WaitQueueFlowers[i].pid, ACKflower);
 				}
@@ -172,7 +180,7 @@ void mainLoop()
 
 			break;
 		case DEAD:
-			
+
 			break;
 
 		default:

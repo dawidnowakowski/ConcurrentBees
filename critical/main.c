@@ -19,6 +19,7 @@ int lamport = 0;
 int reqNumFlower = 0;
 int reqNumReed = 0;
 int layedEggs = 0;
+int deadbees = 0;
 
 request WaitQueueFlowers[p];
 request WaitQueueReeds[p];

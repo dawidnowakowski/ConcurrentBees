@@ -9,6 +9,7 @@
 extern int lamport;
 extern int reqNumFlower;
 extern int reeds[];
+
 // pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 /* wątek komunikacyjny; zajmuje się odbiorem i reakcją na komunikaty */
 void *startKomWatek(void *ptr)
@@ -19,7 +20,7 @@ void *startKomWatek(void *ptr)
     packet_t pakiet;
     /* Obrazuje pętlę odbierającą pakiety o różnych typach */
 
-    while (stan != InFinish)
+    while (stan != DEAD)
     {
         debug("czekam na recv");
         MPI_Recv(&pakiet, 1, MPI_PAKIET_T, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -45,11 +46,10 @@ void *startKomWatek(void *ptr)
             //     printWaitQueueReeds(WaitQueueReeds, reqNumReed);
             // }
 
-
             break;
 
         case ACKreed:
-            debug("Dostałem ACKreed od %d, mam już %d", status.MPI_SOURCE, ackNumReed);
+            debug("Dostałem ACKreed od %d, mam już %d", status.MPI_SOURCE, ackNumReed + 1);
             if (stan == WAIT_REED)
             {
                 ackNumReed++;
@@ -58,6 +58,7 @@ void *startKomWatek(void *ptr)
             break;
 
         case REQflower:
+            pid = pakiet.src;
             if (stan == REST || stan == WAIT_REED || stan == ON_REED)
             {
                 debug("Dostałem REQflower od %d, ale nie mam potrzeby wejść na kwiatek, więc odsyłam ACK", status.MPI_SOURCE);
@@ -67,34 +68,42 @@ void *startKomWatek(void *ptr)
             {
                 debug("Dostałem REQflower od %d, ale jestem na kwiatku, więc dodaję do kolejki", status.MPI_SOURCE);
                 add_flower_request(pid, timestamp, WaitQueueFlowers, &reqNumFlower);
-                reqNumFlower++;
-                // printf("%d req inc 1 %d\n", rank, reqNumFlower);
             }
             else if (stan == WAIT_FLOWER)
             {
                 if (pakiet.ts < oldLamport)
                 {
-                    debug("Dostałem REQflower od %d, czekam na kwiatek, ale mój lamport jest większy, więc odsyłam ACK", status.MPI_SOURCE);
+                    debug("Dostałem REQflower od %d, czekam na kwiatek, ale mój lamport jest większy (%d), więc odsyłam ACK", status.MPI_SOURCE, oldLamport);
                     sendPacket(0, status.MPI_SOURCE, ACKflower);
                 }
                 else
                 {
-                    debug("Dostałem REQflower od %d, czekam na kwiatek, ale mój lamport jest mniejszy lub równy, więc dodaje go do kolejki", status.MPI_SOURCE);
+                    if (pakiet.ts == oldLamport)
+                    {
+                        debug("Dostałem REQflower od %d, czekam na kwiatek, ale mój lamport jest równy (%d), więc dodaje go do kolejki", status.MPI_SOURCE, oldLamport);
+                    }
+                    else if (pakiet.ts > oldLamport)
+                    {
+                        debug("Dostałem REQflower od %d, czekam na kwiatek, ale mój lamport jest mniejszy (%d), więc dodaje go do kolejki", status.MPI_SOURCE, oldLamport);
+                    }
+
+                    // printf("%d req inc PRZED 2 %d\n", rank, reqNumFlower);
                     add_flower_request(pid, timestamp, WaitQueueFlowers, &reqNumFlower);
-                    reqNumFlower++;
-                    // printf("%d req inc 2 %d\n", rank, reqNumFlower);
+                    // printf("%d req inc PO 2 %d\n", rank, reqNumFlower);
                 }
             }
 
             break;
 
         case ACKflower:
-            
+
             if (stan == WAIT_FLOWER)
             {
-                debug("Dostałem ACKflower od %d i go przyjąłem, mam już %d", status.MPI_SOURCE, ackNumFlower);
+                debug("Dostałem ACKflower od %d i go przyjąłem, mam już %d", status.MPI_SOURCE, ackNumFlower + 1);
                 ackNumFlower++;
-            } else{
+            }
+            else
+            {
                 debug("Dostałem ACKflower od %d ale nie czekam", status.MPI_SOURCE);
             }
             break;
@@ -102,8 +111,9 @@ void *startKomWatek(void *ptr)
         case RELEASEreed:
             debug("Dostałem RELEASEreed od %d", status.MPI_SOURCE);
             // printf("index %d\n", pakiet.data);
-            int index = pakiet.data; // po otrzymaniu indexu zwolnionej trzicny zwiększ wartość na jej indexie o 1. 
+            int index = pakiet.data; // po otrzymaniu indexu zwolnionej trzicny zwiększ wartość na jej indexie o 1.
             reeds[index]++;
+            deadbees++;
             break;
 
         default:

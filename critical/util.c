@@ -78,14 +78,13 @@ void sendREQ(packet_t *pkt, int destination, int tag)
 {
     pkt->src = rank;
     MPI_Send(pkt, 1, MPI_PAKIET_T, destination, tag, MPI_COMM_WORLD);
-    debug("Wysyłam %s do %d\n", tag2string(tag), destination);
+    debug("Wysyłam %s do %d z TS %d, pid %d\n", tag2string(tag), destination, pkt->ts, pkt->src);
 }
 
 void changeState(state_t newState)
 {
     pthread_mutex_lock(&stateMut);
     if (stan == DEAD)
-    // if (stan == InFinish)
     {
         pthread_mutex_unlock(&stateMut);
         return;
@@ -134,6 +133,7 @@ void add_flower_request(int pid, int timestamp, request *WaitQueueFlowers, int *
     // Jeśli request o danym pid nie istnieje, dodajemy nowy request
     request new_request = {pid, timestamp};
     WaitQueueFlowers[*current_size] = new_request;
+    (*current_size)++;
 }
 
 void printWaitQueueReeds(request *WaitQueueReeds, int current_size)
